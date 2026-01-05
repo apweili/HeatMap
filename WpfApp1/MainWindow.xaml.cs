@@ -17,9 +17,6 @@ namespace WpfApp1;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private const int CanvasWidth = 800;
-    private const int CanvasHeight = 450;
-
     public MainWindow()
     {
         InitializeComponent();
