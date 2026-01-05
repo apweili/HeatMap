@@ -19,8 +19,8 @@ public class HeatMap : FrameworkElement
             new FrameworkPropertyMetadata(typeof(HeatMap)));
     }
 
-    private const int DefaultWidth = 450;
-    private const int DefaultHeight = 450;
+    private const int DefaultWidth = 400;
+    private const int DefaultHeight = 400;
 
     private DrawingVisual DrawingHeatMapVisual { get; } = new();
 
@@ -44,10 +44,15 @@ public class HeatMap : FrameworkElement
         var p01 = new TemperaturePoint { X = 0, Y = height, Temperature = 20 };
         var p11 = new TemperaturePoint { X = width, Y = height, Temperature = 40 };
 
-        // 创建画笔
-        var brush = new DrawingVisual();
-        using (var dc = brush.RenderOpen())
+        var heatMapVisual = new DrawingVisual();
+        using (var dc = heatMapVisual.RenderOpen())
         {
+            var circleRadius = width / 2;
+            // 定义圆形几何
+            var circleGeometry = new EllipseGeometry(new Point(circleRadius, circleRadius), circleRadius, circleRadius);
+
+            // 应用裁剪路径
+            dc.PushClip(circleGeometry);
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
@@ -65,7 +70,7 @@ public class HeatMap : FrameworkElement
         }
 
         DrawingHeatMapVisual.Children.Clear();
-        DrawingHeatMapVisual.Children.Add(brush);
+        DrawingHeatMapVisual.Children.Add(heatMapVisual);
     }
     
     protected override int VisualChildrenCount => 1;
