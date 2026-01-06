@@ -31,13 +31,36 @@ public class HeatMapVisualHost : UIElement
         RenderHeatMap(newSize.Width, newSize.Height);
     }
 
+    private HeatMapSetting? HeatMapSetting { get; set; }
+
+    public void SetHeatMap(HeatMapSetting heatMapSetting)
+    {
+        HeatMapSetting = heatMapSetting;
+    }
+
+    public void SetTemperaturePoints(IEnumerable<TemperaturePoint> temperaturePoints)
+    {
+        TemperaturePoints = temperaturePoints;
+    }
+
+    private IEnumerable<TemperaturePoint>? TemperaturePoints { get; set; }
+
     private void RenderHeatMap(double width, double height)
     {
+        var maxPositionOnX = HeatMapSetting!.MaxPositionOnX;
+        var maxPositionOnY = HeatMapSetting.MaxPositionOnY;
+        var getColorFromTemperature = HeatMapSetting.GetColorFromTemperature;
+        var testPoints = TemperaturePoints!.Select(p => new TemperaturePoint
+        {
+            Temperature = p.Temperature,
+            X = p.X / maxPositionOnX * width,
+            Y = p.Y / maxPositionOnY * height
+        }).Take(4).ToArray();
         // 定义四个点的坐标和温度值
-        var p00 = new TemperaturePoint { X = 0, Y = 0, Temperature = 10 };
-        var p10 = new TemperaturePoint { X = width, Y = 0, Temperature = 30 };
-        var p01 = new TemperaturePoint { X = 0, Y = height, Temperature = 20 };
-        var p11 = new TemperaturePoint { X = width, Y = height, Temperature = 40 };
+        var p00 = testPoints[0];
+        var p10 = testPoints[1];
+        var p01 = testPoints[2];
+        var p11 = testPoints[3];
 
         var heatMapVisual = new DrawingVisual();
         using (var dc = heatMapVisual.RenderOpen())
@@ -49,15 +72,15 @@ public class HeatMapVisualHost : UIElement
 
             // 应用裁剪路径
             dc.PushClip(circleGeometry);
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
                     // 使用双线性插值计算当前点的温度
-                    double temperature = BilinearInterpolation(x, y, p00, p10, p01, p11);
+                    var temperature = BilinearInterpolation(x, y, p00, p10, p01, p11);
 
                     // 将温度映射到颜色
-                    Color color = GetColorFromTemperature(temperature);
+                    var color = getColorFromTemperature(temperature);
 
                     // 绘制像素
                     dc.DrawRectangle(new SolidColorBrush(color), null, new Rect(x, y, 1.5, 1.5));
@@ -72,29 +95,12 @@ public class HeatMapVisualHost : UIElement
     private static double BilinearInterpolation(double x, double y, TemperaturePoint p00, TemperaturePoint p10,
         TemperaturePoint p01, TemperaturePoint p11)
     {
-        double t = (x - p00.X) / (p10.X - p00.X);
-        double a = p00.Temperature * (1 - t) + p10.Temperature * t;
-        double b = p01.Temperature * (1 - t) + p11.Temperature * t;
+        var t = (x - p00.X) / (p10.X - p00.X);
+        var a = p00.Temperature * (1 - t) + p10.Temperature * t;
+        var b = p01.Temperature * (1 - t) + p11.Temperature * t;
 
-        double u = (y - p00.Y) / (p01.Y - p00.Y);
+        var u = (y - p00.Y) / (p01.Y - p00.Y);
         return a * (1 - u) + b * u;
-    }
-
-    private static Color GetColorFromTemperature(double temperature)
-    {
-        // 假设温度范围是10到40
-        const double minTemp = 10;
-        const double maxTemp = 40;
-
-        // 将温度映射到0-1之间
-        double normalizedTemp = (temperature - minTemp) / (maxTemp - minTemp);
-
-        // 使用蓝色到红色的渐变
-        byte red = (byte)(255 * normalizedTemp);
-        byte green = 0;
-        byte blue = (byte)(255 * (1 - normalizedTemp));
-
-        return Color.FromRgb(red, green, blue);
     }
 
     protected override int VisualChildrenCount => 1;

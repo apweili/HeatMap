@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1000">
     <Grid>
-        <Border Name="canvas" Background="White">
+        <Border Background="White" Height="200" Width="250">
             <cylindricalTopSurface:HeatMap />
         </Border>
     </Grid>

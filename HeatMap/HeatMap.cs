@@ -25,10 +25,21 @@ public class HeatMap : Control
 
     private HeatMapVisualHost? HeatMapVisualHost { get; set; }
 
+    private readonly double _minTemp = 10;
+    private readonly double _maxTemp = 40;
+    private readonly double _maxPosition = 400;
+
     public override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
         HeatMapVisualHost = (HeatMapVisualHost)GetTemplateChild(HeatMapVisualHostTemplateName)!;
+        HeatMapVisualHost.SetHeatMap(new HeatMapSetting(_maxPosition, _maxPosition, GetColorFromTemperature));
+        HeatMapVisualHost.SetTemperaturePoints([
+            new TemperaturePoint { X = 0, Y = 0, Temperature = 10 },
+            new TemperaturePoint { X = _maxPosition, Y = 0, Temperature = 30 },
+            new TemperaturePoint { X = 0, Y = _maxPosition, Temperature = 20 },
+            new TemperaturePoint { X = _maxPosition, Y = _maxPosition, Temperature = 40 }
+        ]);
     }
 
     protected override Size MeasureOverride(Size constraint)
@@ -36,5 +47,23 @@ public class HeatMap : Control
         HeatMapVisualHost!.Measure(new Size(constraint.Width / 5 * 4, constraint.Height));
         return new Size(HeatMapVisualHost.DesiredSize.Width + HeatMapVisualHost.DesiredSize.Width / 4,
             HeatMapVisualHost.DesiredSize.Height);
+    }
+
+    private Color GetColorFromTemperature(double temperature)
+    {
+        return GetColorFromTemperature(temperature, _minTemp, _maxTemp);
+    }
+
+    private static Color GetColorFromTemperature(double temperature, double minTemp, double maxTemp)
+    {
+        // 将温度映射到0-1之间
+        var normalizedTemp = (temperature - minTemp) / (maxTemp - minTemp);
+
+        // 使用蓝色到红色的渐变
+        var red = (byte)(255 * normalizedTemp);
+        byte green = 0;
+        var blue = (byte)(255 * (1 - normalizedTemp));
+
+        return Color.FromRgb(red, green, blue);
     }
 }
