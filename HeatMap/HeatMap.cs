@@ -51,13 +51,52 @@ public class HeatMap : Control
     {
         var coordinateSystemCanvas = (Canvas)sender;
         coordinateSystemCanvas.Children.Clear();
-        DepictCoordinateSystem(coordinateSystemCanvas, e.NewSize.Width, e.NewSize.Height);
+        DrawCoordinateSystem(coordinateSystemCanvas, e.NewSize.Width, e.NewSize.Height);
     }
 
-    private void DepictCoordinateSystem(Canvas canvas, double width, double height)
+    private void DrawCoordinateSystem(Canvas canvas, double width, double height)
     {
+        const double fontSizeFactor = 10d / 200;
         var rectangleWidth = width / 5;
         canvas.Children.Add(CreateRectangle(rectangleWidth, height, _minTemp, _maxTemp));
+        var temperatureSpan = _maxTemp - _minTemp;
+        var tickLineHorizonOffset = rectangleWidth / 3;
+        var fontSize = fontSizeFactor * height;
+        var textSize = CalculateTextBlockHeight("A", fontSize);
+        foreach (var temperaturePoint in TemperaturePoints)
+        {
+            var tickHeight = height - (temperaturePoint.Temperature - _minTemp) / temperatureSpan * height;
+            if (tickHeight == 0)
+            {
+                tickHeight = 2;
+            }
+
+            var tickLine = new Line
+            {
+                X1 = tickLineHorizonOffset,
+                Y1 = tickHeight,
+                X2 = rectangleWidth,
+                Y2 = tickHeight,
+                Stroke = Brushes.Black,
+                StrokeThickness = 1
+            };
+            canvas.Children.Add(tickLine);
+            var label = new TextBlock
+            {
+                Text = GetTemperaturePointInfo(temperaturePoint),
+                Foreground = Brushes.Black,
+                FontSize = fontSize,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+            Canvas.SetLeft(label, rectangleWidth);
+            var textBlockHeight = tickHeight - textSize / 4;
+            if (textBlockHeight + textSize > height)
+            {
+                textBlockHeight = tickHeight - textSize;
+            }
+            Canvas.SetTop(label, textBlockHeight);
+            canvas.Children.Add(label);
+        }
     }
 
     protected override Size MeasureOverride(Size constraint)
@@ -124,5 +163,19 @@ public class HeatMap : Control
         color = GetColorFromTemperature(maxTemp, minTemp, maxTemp);
         linearGradientBrush.GradientStops.Add(new GradientStop(color, 1));
         return linearGradientBrush;
+    }
+
+    private static string GetTemperaturePointInfo(TemperaturePoint point)
+    {
+        return $"{point.X}-{point.Y} {point.Temperature}";
+    }
+
+    private double CalculateTextBlockHeight(string labelText, double fontSize)
+    {
+        var pixelsPerDip = SystemParameters.FullPrimaryScreenWidth / SystemParameters.PrimaryScreenWidth;
+        var formattedText = new FormattedText(labelText, System.Globalization.CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            new Typeface(FontFamily, FontStyle, FontWeight, FontStretch), fontSize, Brushes.Black, pixelsPerDip);
+        return formattedText.Height;
     }
 }
