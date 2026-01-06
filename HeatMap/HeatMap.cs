@@ -24,7 +24,17 @@ public class HeatMap : Control
 
     private readonly double _minTemp = 10;
     private readonly double _maxTemp = 40;
-    private readonly double _maxPosition = 400;
+    private readonly double _maxPosition = DefaultMaxPosition;
+
+    private const double DefaultMaxPosition = 400;
+
+    private IEnumerable<TemperaturePoint> TemperaturePoints { get; } =
+    [
+        new() { X = 0, Y = 0, Temperature = 10 },
+        new() { X = DefaultMaxPosition, Y = 0, Temperature = 30 },
+        new() { X = 0, Y = DefaultMaxPosition, Temperature = 20 },
+        new() { X = DefaultMaxPosition, Y = DefaultMaxPosition, Temperature = 40 }
+    ];
 
     public override void OnApplyTemplate()
     {
@@ -34,12 +44,7 @@ public class HeatMap : Control
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
         CoordinateSystemCanvas.SizeChanged += CoordinateSystemCanvasOnSizeChanged;
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(_maxPosition, _maxPosition, GetColorFromTemperature));
-        HeatMapVisualHost.SetTemperaturePoints([
-            new TemperaturePoint { X = 0, Y = 0, Temperature = 10 },
-            new TemperaturePoint { X = _maxPosition, Y = 0, Temperature = 30 },
-            new TemperaturePoint { X = 0, Y = _maxPosition, Temperature = 20 },
-            new TemperaturePoint { X = _maxPosition, Y = _maxPosition, Temperature = 40 }
-        ]);
+        HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
     }
 
     private void CoordinateSystemCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -51,41 +56,9 @@ public class HeatMap : Control
 
     private void DepictCoordinateSystem(Canvas canvas, double width, double height)
     {
-        canvas.Children.Add(CreateRectangle());
-        return;
-
-        Rectangle CreateRectangle()
-        {
-            var rectangle = new Rectangle
-            {
-                Width = width / 5,
-                Height = height,
-                Fill = CreateLinearGradientBrush()
-            };
-
-            return rectangle;
-        }
-
-        LinearGradientBrush CreateLinearGradientBrush()
-        {
-            var linearGradientBrush = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(0, 1)
-            };
-
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Navy, 0));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Navy, 0.25));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Green, 0.26));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Green, 0.50));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Yellow, 0.51));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Yellow, 0.75));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Red, 0.76));
-            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Red, 1));
-            return linearGradientBrush;
-        }
+        var rectangleWidth = width / 5;
+        canvas.Children.Add(CreateRectangle(rectangleWidth, height, _minTemp, _maxTemp));
     }
-
 
     protected override Size MeasureOverride(Size constraint)
     {
@@ -110,5 +83,46 @@ public class HeatMap : Control
         var blue = (byte)(255 * (1 - normalizedTemp));
 
         return Color.FromRgb(red, green, blue);
+    }
+
+    private static Rectangle CreateRectangle(double width, double height, double minTemp, double maxTemp)
+    {
+        var rectangle = new Rectangle
+        {
+            Width = width,
+            Height = height,
+            Fill = CreateLinearGradientBrush(height, 2, minTemp, maxTemp)
+        };
+
+        return rectangle;
+    }
+
+    private static LinearGradientBrush CreateLinearGradientBrush(double height, double heightSpan, double minTemp,
+        double maxTemp)
+    {
+        var linearGradientBrush = new LinearGradientBrush
+        {
+            StartPoint = new Point(0, 1),
+            EndPoint = new Point(0, 0)
+        };
+
+        var offsetSpan = heightSpan / height;
+        var color = GetColorFromTemperature(minTemp, minTemp, maxTemp);
+        var colorUsedCountd = 0;
+        for (double offset = 0; offset < 1; offset += offsetSpan, colorUsedCountd++)
+        {
+            if (colorUsedCountd == 2)
+            {
+                colorUsedCountd = 0;
+                var temperature = minTemp + offset * (maxTemp - minTemp);
+                color = GetColorFromTemperature(temperature, minTemp, maxTemp);
+            }
+
+            linearGradientBrush.GradientStops.Add(new GradientStop(color, offset));
+        }
+
+        color = GetColorFromTemperature(maxTemp, minTemp, maxTemp);
+        linearGradientBrush.GradientStops.Add(new GradientStop(color, 1));
+        return linearGradientBrush;
     }
 }
