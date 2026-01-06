@@ -18,19 +18,19 @@
                 <ControlTemplate TargetType="{x:Type cylindricalTopSurface:HeatMap}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="3*" />
                         </Grid.ColumnDefinitions>
                         <Grid x:Name="PART_Title" Grid.Row="0" Grid.Column="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="4*" />
                             </Grid.ColumnDefinitions>
-                            <Rectangle Grid.Column="0" Fill="{StaticResource DefaultGradientBrush}"></Rectangle>
+                            <Rectangle Grid.Column="0" Fill="{StaticResource DefaultGradientBrush}" />
                         </Grid>
-                        <Canvas Grid.Row="0" Grid.Column="1">
+                        <Grid Grid.Row="0" Grid.Column="1">
                             <cylindricalTopSurface:HeatMapVisualHost x:Name="PART_HeatMapVisualHost" />
-                        </Canvas>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

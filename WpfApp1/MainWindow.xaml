@@ -6,10 +6,10 @@
         xmlns:local="clr-namespace:WpfApp1"
         xmlns:cylindricalTopSurface="clr-namespace:CylindricalTopSurface;assembly=HeatMap"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="800" Width="1000">
     <Grid>
-        <Canvas Name="canvas" Background="White">
+        <Border Name="canvas" Background="White">
             <cylindricalTopSurface:HeatMap />
-        </Canvas>
+        </Border>
     </Grid>
 </Window>

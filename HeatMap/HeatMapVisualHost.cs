@@ -42,9 +42,10 @@ public class HeatMapVisualHost : UIElement
         var heatMapVisual = new DrawingVisual();
         using (var dc = heatMapVisual.RenderOpen())
         {
-            var circleRadius = width / 2;
+            var widthOffset = width / 2;
+            var heightOffset = height / 2;
             // 定义圆形几何
-            var circleGeometry = new EllipseGeometry(new Point(circleRadius, circleRadius), circleRadius, circleRadius);
+            var circleGeometry = new EllipseGeometry(new Point(widthOffset, heightOffset), widthOffset, heightOffset);
 
             // 应用裁剪路径
             dc.PushClip(circleGeometry);

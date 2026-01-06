@@ -39,8 +39,7 @@ public class HeatMap : Control
     protected override Size MeasureOverride(Size constraint)
     {
         HeatMapVisualHost!.Measure(new Size(constraint.Width / 5 * 4, constraint.Height));
-        Title!.Measure(new Size(HeatMapVisualHost.DesiredSize.Width / 4, constraint.Height));
-        return new Size(HeatMapVisualHost.DesiredSize.Width + Title.DesiredSize.Width,
-            double.Max(HeatMapVisualHost.DesiredSize.Height, Title.DesiredSize.Height));
+        return new Size(HeatMapVisualHost.DesiredSize.Width + HeatMapVisualHost.DesiredSize.Width / 4,
+            HeatMapVisualHost.DesiredSize.Height);
     }
 }
