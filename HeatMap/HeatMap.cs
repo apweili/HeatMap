@@ -1,10 +1,12 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace HeatMap;
 
-[TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(Canvas))]
+[TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(HeatMapVisualHost))]
+[TemplatePart(Name = CoordinateSystemCanvasName, Type = typeof(Canvas))]
 public class HeatMap : Control
 {
     static HeatMap()
@@ -15,8 +17,10 @@ public class HeatMap : Control
     }
 
     private const string HeatMapVisualHostTemplateName = "PART_HeatMapVisualHost";
+    private const string CoordinateSystemCanvasName = "PART_CoordinateSystemCanvas";
 
     private HeatMapVisualHost? HeatMapVisualHost { get; set; }
+    private Canvas? CoordinateSystemCanvas { get; set; }
 
     private readonly double _minTemp = 10;
     private readonly double _maxTemp = 40;
@@ -26,6 +30,9 @@ public class HeatMap : Control
     {
         base.OnApplyTemplate();
         HeatMapVisualHost = (HeatMapVisualHost)GetTemplateChild(HeatMapVisualHostTemplateName)!;
+        CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
+        CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
+        CoordinateSystemCanvas.SizeChanged += CoordinateSystemCanvasOnSizeChanged;
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(_maxPosition, _maxPosition, GetColorFromTemperature));
         HeatMapVisualHost.SetTemperaturePoints([
             new TemperaturePoint { X = 0, Y = 0, Temperature = 10 },
@@ -34,6 +41,51 @@ public class HeatMap : Control
             new TemperaturePoint { X = _maxPosition, Y = _maxPosition, Temperature = 40 }
         ]);
     }
+
+    private void CoordinateSystemCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var coordinateSystemCanvas = (Canvas)sender;
+        coordinateSystemCanvas.Children.Clear();
+        DepictCoordinateSystem(coordinateSystemCanvas, e.NewSize.Width, e.NewSize.Height);
+    }
+
+    private void DepictCoordinateSystem(Canvas canvas, double width, double height)
+    {
+        canvas.Children.Add(CreateRectangle());
+        return;
+
+        Rectangle CreateRectangle()
+        {
+            var rectangle = new Rectangle
+            {
+                Width = width / 5,
+                Height = height,
+                Fill = CreateLinearGradientBrush()
+            };
+
+            return rectangle;
+        }
+
+        LinearGradientBrush CreateLinearGradientBrush()
+        {
+            var linearGradientBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1)
+            };
+
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Navy, 0));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Navy, 0.25));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Green, 0.26));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Green, 0.50));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Yellow, 0.51));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Yellow, 0.75));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Red, 0.76));
+            linearGradientBrush.GradientStops.Add(new GradientStop(Colors.Red, 1));
+            return linearGradientBrush;
+        }
+    }
+
 
     protected override Size MeasureOverride(Size constraint)
     {
