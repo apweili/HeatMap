@@ -25,10 +25,10 @@ public class HeatMapVisualHost : UIElement
         return availableSize;
     }
 
-    protected override void OnRenderSizeChanged(SizeChangedInfo info)
+    protected override void ArrangeCore(Rect finalRect)
     {
-        base.OnRenderSizeChanged(info);
-        var newSize = info.NewSize;
+        base.ArrangeCore(finalRect);
+        var newSize = finalRect.Size;
         RenderHeatMap(newSize.Width, newSize.Height);
     }
 
@@ -62,36 +62,31 @@ public class HeatMapVisualHost : UIElement
         var p10 = testPoints[1];
         var p01 = testPoints[2];
         var p11 = testPoints[3];
-        var heatMapVisual = new DrawingVisual();
-        using (var dc = heatMapVisual.RenderOpen())
+        DrawingHeatMapVisual.Children.Clear();
+        using var dc = DrawingHeatMapVisual.RenderOpen();
+        if (HeatMapSetting.Shape == Shape.Circle)
         {
-            if (HeatMapSetting.Shape == Shape.Circle)
-            {
-                var widthOffset = width / 2;
-                var heightOffset = height / 2;
-                var circleGeometry =
-                    new EllipseGeometry(new Point(widthOffset, heightOffset), widthOffset, heightOffset);
-                dc.PushClip(circleGeometry);
-            }
-
-            for (var x = 0; x < width; x++)
-            {
-                for (var y = 0; y < height; y++)
-                {
-                    // 使用双线性插值计算当前点的温度
-                    var temperature = BilinearInterpolation(x, y, p00, p10, p01, p11);
-
-                    // 将温度映射到颜色
-                    var color = getColorFromTemperature(temperature);
-
-                    // 绘制像素
-                    dc.DrawRectangle(new SolidColorBrush(color), null, new Rect(x, y, 1.5, 1.5));
-                }
-            }
+            var widthOffset = width / 2;
+            var heightOffset = height / 2;
+            var circleGeometry =
+                new EllipseGeometry(new Point(widthOffset, heightOffset), widthOffset, heightOffset);
+            dc.PushClip(circleGeometry);
         }
 
-        DrawingHeatMapVisual.Children.Clear();
-        DrawingHeatMapVisual.Children.Add(heatMapVisual);
+        for (var x = 0; x < width; x++)
+        {
+            for (var y = 0; y < height; y++)
+            {
+                // 使用双线性插值计算当前点的温度
+                var temperature = BilinearInterpolation(x, y, p00, p10, p01, p11);
+
+                // 将温度映射到颜色
+                var color = getColorFromTemperature(temperature);
+
+                // 绘制像素
+                dc.DrawRectangle(new SolidColorBrush(color), null, new Rect(x, y, 1.5, 1.5));
+            }
+        }
     }
 
     private static double BilinearInterpolation(double x, double y, TemperaturePoint p00, TemperaturePoint p10,
