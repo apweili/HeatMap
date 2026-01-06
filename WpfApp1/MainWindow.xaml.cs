@@ -1,14 +1,6 @@
-﻿using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 using HeatMap;
+using HeatMap.Enums;
 
 namespace WpfApp1;
 
@@ -20,5 +12,19 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        HeatMap.MaxTemperature = 40;
+        HeatMap.MinTemperature = 10;
+        var maxPostion = 400;
+        HeatMap.MaxVerticalPosition = maxPostion;
+        HeatMap.MaxHorizontalPosition = maxPostion;
+        HeatMap.Shape = Shape.Circle;
+        HeatMap.TemperaturePoints =
+        [
+            new TemperaturePoint { X = 0, Y = 0, Temperature = 10 },
+            new TemperaturePoint { X = HeatMap.MaxHorizontalPosition, Y = 0, Temperature = 30 },
+            new TemperaturePoint { X = 0, Y = HeatMap.MaxVerticalPosition, Temperature = 20 },
+            new TemperaturePoint
+                { X = HeatMap.MaxHorizontalPosition, Y = HeatMap.MaxVerticalPosition, Temperature = 40 }
+        ];
     }
 }

@@ -8,4 +8,10 @@
         <RootNamespace>HeatMap</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Compile Update="HeatMap_DependencyProperties.cs">
+        <DependentUpon>HeatMap.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

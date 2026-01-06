@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using HeatMap.Enums;
 
 namespace HeatMap;
 
@@ -47,8 +48,8 @@ public class HeatMapVisualHost : UIElement
 
     private void RenderHeatMap(double width, double height)
     {
-        var maxPositionOnX = HeatMapSetting!.MaxPositionOnX;
-        var maxPositionOnY = HeatMapSetting.MaxPositionOnY;
+        var maxPositionOnX = HeatMapSetting!.MaxHorizontalPosition;
+        var maxPositionOnY = HeatMapSetting.MaxVerticalPosition;
         var getColorFromTemperature = HeatMapSetting.GetColorFromTemperature;
         var testPoints = TemperaturePoints!.Select(p => new TemperaturePoint
         {
@@ -61,17 +62,18 @@ public class HeatMapVisualHost : UIElement
         var p10 = testPoints[1];
         var p01 = testPoints[2];
         var p11 = testPoints[3];
-
         var heatMapVisual = new DrawingVisual();
         using (var dc = heatMapVisual.RenderOpen())
         {
-            var widthOffset = width / 2;
-            var heightOffset = height / 2;
-            // 定义圆形几何
-            var circleGeometry = new EllipseGeometry(new Point(widthOffset, heightOffset), widthOffset, heightOffset);
+            if (HeatMapSetting.Shape == Shape.Circle)
+            {
+                var widthOffset = width / 2;
+                var heightOffset = height / 2;
+                var circleGeometry =
+                    new EllipseGeometry(new Point(widthOffset, heightOffset), widthOffset, heightOffset);
+                dc.PushClip(circleGeometry);
+            }
 
-            // 应用裁剪路径
-            dc.PushClip(circleGeometry);
             for (var x = 0; x < width; x++)
             {
                 for (var y = 0; y < height; y++)
@@ -107,6 +109,6 @@ public class HeatMapVisualHost : UIElement
 
     protected override Visual GetVisualChild(int index)
     {
-        return DrawingHeatMapVisual!;
+        return DrawingHeatMapVisual;
     }
 }

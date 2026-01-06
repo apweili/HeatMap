@@ -7,7 +7,7 @@ namespace HeatMap;
 
 [TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(HeatMapVisualHost))]
 [TemplatePart(Name = CoordinateSystemCanvasName, Type = typeof(Canvas))]
-public class HeatMap : Control
+public partial class HeatMap : Control
 {
     static HeatMap()
     {
@@ -22,20 +22,6 @@ public class HeatMap : Control
     private HeatMapVisualHost? HeatMapVisualHost { get; set; }
     private Canvas? CoordinateSystemCanvas { get; set; }
 
-    private readonly double _minTemp = 10;
-    private readonly double _maxTemp = 40;
-    private readonly double _maxPosition = DefaultMaxPosition;
-
-    private const double DefaultMaxPosition = 400;
-
-    private IEnumerable<TemperaturePoint> TemperaturePoints { get; } =
-    [
-        new() { X = 0, Y = 0, Temperature = 10 },
-        new() { X = DefaultMaxPosition, Y = 0, Temperature = 30 },
-        new() { X = 0, Y = DefaultMaxPosition, Temperature = 20 },
-        new() { X = DefaultMaxPosition, Y = DefaultMaxPosition, Temperature = 40 }
-    ];
-
     public override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -43,7 +29,8 @@ public class HeatMap : Control
         CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
         CoordinateSystemCanvas.SizeChanged += CoordinateSystemCanvasOnSizeChanged;
-        HeatMapVisualHost.SetHeatMap(new HeatMapSetting(_maxPosition, _maxPosition, GetColorFromTemperature));
+        HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
+            GetColorFromTemperature, Shape));
         HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
     }
 
@@ -57,15 +44,17 @@ public class HeatMap : Control
     private void DrawCoordinateSystem(Canvas canvas, double width, double height)
     {
         const double fontSizeFactor = 10d / 200;
-        var rectangleWidth = width / 5;
-        canvas.Children.Add(CreateRectangle(rectangleWidth, height, _minTemp, _maxTemp));
-        var temperatureSpan = _maxTemp - _minTemp;
+        var maxTemperature = MaxTemperature;
+        var minTemperature = MinTemperature;
+        var rectangleWidth = width / 8;
+        canvas.Children.Add(CreateRectangle(rectangleWidth, height, minTemperature, maxTemperature));
+        var temperatureSpan = maxTemperature - minTemperature;
         var tickLineHorizonOffset = rectangleWidth / 3;
         var fontSize = fontSizeFactor * height;
         var textSize = CalculateTextBlockHeight("A", fontSize);
         foreach (var temperaturePoint in TemperaturePoints)
         {
-            var tickHeight = height - (temperaturePoint.Temperature - _minTemp) / temperatureSpan * height;
+            var tickHeight = height - (temperaturePoint.Temperature - minTemperature) / temperatureSpan * height;
             if (tickHeight == 0)
             {
                 tickHeight = 2;
@@ -108,7 +97,7 @@ public class HeatMap : Control
 
     private Color GetColorFromTemperature(double temperature)
     {
-        return GetColorFromTemperature(temperature, _minTemp, _maxTemp);
+        return GetColorFromTemperature(temperature, MinTemperature, MaxTemperature);
     }
 
     private static Color GetColorFromTemperature(double temperature, double minTemp, double maxTemp)

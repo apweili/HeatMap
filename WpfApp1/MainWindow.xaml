@@ -8,6 +8,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="400" Width="500">
     <Grid>
-        <cylindricalTopSurface:HeatMap/>
+        <cylindricalTopSurface:HeatMap x:Name="HeatMap"/>
     </Grid>
 </Window>

@@ -1,13 +1,16 @@
 using System.Windows.Media;
+using HeatMap.Enums;
 
 namespace HeatMap;
 
 public class HeatMapSetting(
-    double maxPositionOnX,
-    double maxPositionOnY,
-    Func<double, Color> getColorFromTemperature)
+    double maxHorizontalPosition,
+    double maxVerticalPosition,
+    Func<double, Color> getColorFromTemperature,
+    Shape shape)
 {
-    public double MaxPositionOnX { get; } = maxPositionOnX;
-    public double MaxPositionOnY { get; } = maxPositionOnY;
+    public double MaxHorizontalPosition { get; } = maxHorizontalPosition;
+    public double MaxVerticalPosition { get; } = maxVerticalPosition;
+    public Shape Shape { get; } = shape;
     public Func<double, Color> GetColorFromTemperature { get; } = getColorFromTemperature;
 }
