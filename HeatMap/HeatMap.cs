@@ -12,7 +12,6 @@ using System.Windows.Shapes;
 namespace CylindricalTopSurface;
 
 [TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(Canvas))]
-[TemplatePart(Name = TitleName, Type = typeof(Grid))]
 public class HeatMap : Control
 {
     static HeatMap()
@@ -23,9 +22,6 @@ public class HeatMap : Control
     }
 
     private const string HeatMapVisualHostTemplateName = "PART_HeatMapVisualHost";
-    private const string TitleName = "PART_Title";
-
-    private Grid? Title { get; set; }
 
     private HeatMapVisualHost? HeatMapVisualHost { get; set; }
 
@@ -33,7 +29,6 @@ public class HeatMap : Control
     {
         base.OnApplyTemplate();
         HeatMapVisualHost = (HeatMapVisualHost)GetTemplateChild(HeatMapVisualHostTemplateName)!;
-        Title = (Grid)GetTemplateChild(TitleName)!;
     }
 
     protected override Size MeasureOverride(Size constraint)
