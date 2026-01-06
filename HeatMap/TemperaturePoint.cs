@@ -1,4 +1,4 @@
-namespace CylindricalTopSurface;
+namespace HeatMap;
 
 public class TemperaturePoint
 {

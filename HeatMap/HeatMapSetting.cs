@@ -1,6 +1,6 @@
 using System.Windows.Media;
 
-namespace CylindricalTopSurface;
+namespace HeatMap;
 
 public class HeatMapSetting(
     double maxPositionOnX,

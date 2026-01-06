@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace CylindricalTopSurface;
+namespace HeatMap;
 
 public class HeatMapVisualHost : UIElement
 {
