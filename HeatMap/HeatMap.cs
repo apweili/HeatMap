@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -14,6 +15,11 @@ public partial class HeatMap : Control
         DefaultStyleKeyProperty.OverrideMetadata(typeof(HeatMap),
             new FrameworkPropertyMetadata(typeof(HeatMap)));
         SnapsToDevicePixelsProperty.OverrideMetadata(typeof(HeatMap), new FrameworkPropertyMetadata(true));
+    }
+
+    public HeatMap()
+    {
+        FocusManager.SetIsFocusScope(this, true);
     }
 
     private const string HeatMapVisualHostTemplateName = "PART_HeatMapVisualHost";
@@ -32,6 +38,12 @@ public partial class HeatMap : Control
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
             GetColorFromTemperature, Shape));
         HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
+    }
+
+    protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+    {
+        HeatMapVisualHost!.EnsurePopupClosed();
+        Dispatcher.InvokeAsync(() => Keyboard.Focus(this));
     }
 
     private void CoordinateSystemCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)

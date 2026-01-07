@@ -11,7 +11,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="3*" />
                         </Grid.ColumnDefinitions>
-                        <Canvas x:Name="PART_CoordinateSystemCanvas" Grid.Row="0" Grid.Column="0" />
+                        <Canvas x:Name="PART_CoordinateSystemCanvas" Grid.Row="0" Grid.Column="0" Background="Beige"/>
                         <heatMap:HeatMapVisualHost x:Name="PART_HeatMapVisualHost" Grid.Row="0" Grid.Column="1" />
                     </Grid>
                 </ControlTemplate>

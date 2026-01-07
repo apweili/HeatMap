@@ -1,6 +1,9 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
-using HeatMap.Enums;
+using Shape = HeatMap.Enums.Shape;
 
 namespace HeatMap;
 
@@ -8,7 +11,31 @@ public class HeatMapVisualHost : UIElement
 {
     private const int DefaultWidth = 400;
     private const int DefaultHeight = 400;
+
+    private Lazy<Popup> Popup { get; } = new(PopupFactory);
+
+    private static Popup PopupFactory()
+    {
+        var popup = new Popup
+        {
+            Child = new TextBlock
+            {
+                Focusable = true,
+                Background = Brushes.White,
+                Foreground = Brushes.Black
+            }
+        };
+
+        return popup;
+    }
+
+    private Size CurrentRenderSize { get; set; }
     private DrawingVisual DrawingHeatMapVisual { get; } = new();
+
+    public HeatMapVisualHost()
+    {
+        AddVisualChild(DrawingHeatMapVisual);
+    }
 
     protected override Size MeasureCore(Size availableSize)
     {
@@ -28,8 +55,26 @@ public class HeatMapVisualHost : UIElement
     protected override void ArrangeCore(Rect finalRect)
     {
         base.ArrangeCore(finalRect);
-        var newSize = finalRect.Size;
-        RenderHeatMap(newSize.Width, newSize.Height);
+        CurrentRenderSize = finalRect.Size;
+        RenderHeatMap(CurrentRenderSize.Width, CurrentRenderSize.Height);
+    }
+
+    protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+    {
+        EnsurePopupClosed();
+    }
+
+    protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+    {
+        EnsurePopupClosed();
+        var point = e.GetPosition(this);
+        var horizonPosition = Math.Round(point.X / CurrentRenderSize.Width * HeatMapSetting!.MaxHorizontalPosition, 2);
+        var verticalPosition = Math.Round(point.Y / CurrentRenderSize.Height * HeatMapSetting.MaxVerticalPosition, 2);
+        var popup = Popup.Value;
+        ((TextBlock)popup.Child).Text = $"x:{horizonPosition}, y:{verticalPosition}";
+        popup.Placement = PlacementMode.MousePoint;
+        popup.PlacementTarget = this;
+        popup.IsOpen = true;
     }
 
     private HeatMapSetting? HeatMapSetting { get; set; }
@@ -105,5 +150,11 @@ public class HeatMapVisualHost : UIElement
     protected override Visual GetVisualChild(int index)
     {
         return DrawingHeatMapVisual;
+    }
+
+    public void EnsurePopupClosed()
+    {
+        if (Popup is { IsValueCreated: true, Value.IsOpen: true })
+            Popup.Value.IsOpen = false;
     }
 }
