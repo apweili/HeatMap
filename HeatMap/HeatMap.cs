@@ -8,6 +8,7 @@ namespace HeatMap;
 
 [TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(HeatMapVisualHost))]
 [TemplatePart(Name = CoordinateSystemCanvasName, Type = typeof(Canvas))]
+[TemplatePart(Name = CoordinateXCanvasName, Type = typeof(Canvas))]
 public partial class HeatMap : Control
 {
     static HeatMap()
@@ -24,9 +25,11 @@ public partial class HeatMap : Control
 
     private const string HeatMapVisualHostTemplateName = "PART_HeatMapVisualHost";
     private const string CoordinateSystemCanvasName = "PART_CoordinateSystemCanvas";
+    private const string CoordinateXCanvasName = "PART_CoordinateXCanvas";
 
     private HeatMapVisualHost? HeatMapVisualHost { get; set; }
     private Canvas? CoordinateSystemCanvas { get; set; }
+    private Canvas? CoordinateXCanvas { get; set; }
 
     public override void OnApplyTemplate()
     {
@@ -35,6 +38,9 @@ public partial class HeatMap : Control
         CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
         CoordinateSystemCanvas.SizeChanged += CoordinateSystemCanvasOnSizeChanged;
+        CoordinateXCanvas = (Canvas)GetTemplateChild(CoordinateXCanvasName)!;
+        CoordinateXCanvas.SizeChanged -= CoordinateXCanvasOnSizeChanged;
+        CoordinateXCanvas.SizeChanged += CoordinateXCanvasOnSizeChanged;
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
             GetColorFromTemperature, Shape));
         HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
@@ -44,6 +50,13 @@ public partial class HeatMap : Control
     {
         HeatMapVisualHost!.EnsurePopupClosed();
         Dispatcher.InvokeAsync(() => Keyboard.Focus(this));
+    }
+
+    private void CoordinateXCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var coordinateXCanvas = (Canvas)sender;
+        coordinateXCanvas.Children.Clear();
+        DrawCoordinateXCanvas(coordinateXCanvas, e.NewSize.Width, e.NewSize.Height);
     }
 
     private void CoordinateSystemCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -100,6 +113,63 @@ public partial class HeatMap : Control
         }
     }
 
+    private void DrawCoordinateXCanvas(Canvas coordinateXCanvas, double newSizeWidth, double newSizeHeight)
+    {
+        const int start = 0;
+        var end = MaxHorizontalPosition;
+        var lineHeight = newSizeHeight / 3;
+        var axisLine = new Line
+        {
+            X1 = 0,
+            Y1 = lineHeight,
+            X2 = newSizeWidth,
+            Y2 = lineHeight,
+            Stroke = Brushes.Black,
+            StrokeThickness = 1
+        };
+        coordinateXCanvas.Children.Add(axisLine);
+
+        const int numTicks = 5;
+        const double fontSizeFactor = 0.4;
+        var font = fontSizeFactor * newSizeHeight;
+        var tickInterval = (end - start) / numTicks;
+        var tickMarkY1 = lineHeight * 0.2;
+        var textBlockYOffset = lineHeight * 1.2;
+        for (var i = 0; i <= numTicks; i++)
+        {
+            var position = start + i * tickInterval;
+            var xPosition = position / (end - start) * newSizeWidth;
+            if (i != 0)
+            {
+                var tickMark = new Line
+                {
+                    X1 = xPosition,
+                    Y1 = tickMarkY1,
+                    X2 = xPosition,
+                    Y2 = lineHeight,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1
+                };
+                coordinateXCanvas.Children.Add(tickMark);
+            }
+
+            var label = new TextBlock
+            {
+                Text = position.ToString("F2"),
+                Foreground = Brushes.Black,
+                FontSize = font,
+            };
+            Canvas.SetLeft(label, xPosition - font * i switch
+            {
+                0 => 0,
+                numTicks => 2.6,
+                _ => 2
+            });
+            Canvas.SetTop(label, textBlockYOffset);
+            coordinateXCanvas.Children.Add(label);
+        }
+    }
+
     protected override Size MeasureOverride(Size constraint)
     {
         HeatMapVisualHost!.Measure(new Size(constraint.Width / 5 * 4, constraint.Height));
@@ -148,12 +218,12 @@ public partial class HeatMap : Control
 
         var offsetSpan = heightSpan / height;
         var color = GetColorFromTemperature(minTemp, minTemp, maxTemp);
-        var colorUsedCountd = 0;
-        for (double offset = 0; offset < 1; offset += offsetSpan, colorUsedCountd++)
+        var colorUsedCount = 0;
+        for (double offset = 0; offset < 1; offset += offsetSpan, colorUsedCount++)
         {
-            if (colorUsedCountd == 2)
+            if (colorUsedCount == 2)
             {
-                colorUsedCountd = 0;
+                colorUsedCount = 0;
                 var temperature = minTemp + offset * (maxTemp - minTemp);
                 color = GetColorFromTemperature(temperature, minTemp, maxTemp);
             }

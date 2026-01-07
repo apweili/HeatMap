@@ -14,9 +14,9 @@ public partial class MainWindow : Window
         InitializeComponent();
         HeatMap.MaxTemperature = 40;
         HeatMap.MinTemperature = 10;
-        var maxPostion = 400;
-        HeatMap.MaxVerticalPosition = maxPostion;
-        HeatMap.MaxHorizontalPosition = maxPostion;
+        const int maxPosition = 400;
+        HeatMap.MaxVerticalPosition = maxPosition;
+        HeatMap.MaxHorizontalPosition = maxPosition;
         HeatMap.Shape = Shape.Circle;
         HeatMap.TemperaturePoints =
         [

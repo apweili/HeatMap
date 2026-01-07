@@ -7,12 +7,22 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type heatMap:HeatMap}">
                     <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="10*" />
+                            <RowDefinition Height="1*" />
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="3*" />
                         </Grid.ColumnDefinitions>
-                        <Canvas x:Name="PART_CoordinateSystemCanvas" Grid.Row="0" Grid.Column="0" Background="Beige"/>
-                        <heatMap:HeatMapVisualHost x:Name="PART_HeatMapVisualHost" Grid.Row="0" Grid.Column="1" />
+                        <Canvas x:Name="PART_CoordinateSystemCanvas" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                Background="Beige" />
+                        <Border Grid.Row="0" Grid.Column="1" Padding="5">
+                            <heatMap:HeatMapVisualHost x:Name="PART_HeatMapVisualHost" />
+                        </Border>
+                        <Border Grid.Row="1" Grid.Column="1" Background="Transparent" Padding="5,0">
+                            <Canvas x:Name="PART_CoordinateXCanvas" />
+                        </Border>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
