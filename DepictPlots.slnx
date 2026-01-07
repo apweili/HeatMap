@@ -1,6 +1,5 @@
 <Solution>
   <Project Path="../../../development/WPFHeatMap-master/WPFHeatMap-master/WPFHeatMap.csproj" />
-  <Project Path="../RawDepictPlots/RawDepict/RawDepict.csproj" />
   <Project Path="DepictByWebView2/DepictByWebView2.csproj" />
   <Project Path="HeatMap/HeatMap.csproj" />
   <Project Path="WpfApp1/WpfApp1.csproj" />

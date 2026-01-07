@@ -7,10 +7,10 @@
         xmlns:cylindricalTopSurface="clr-namespace:HeatMap;assembly=HeatMap"
         mc:Ignorable="d"
         Title="MainWindow">
-    <!-- <Border BorderThickness="1" BorderBrush="Black" Width="182" Height="156"> -->
-    <!--     <cylindricalTopSurface:HeatMap x:Name="HeatMap" /> -->
-    <!-- </Border> -->
-    <Border BorderThickness="1" BorderBrush="Black" Width="550" Height="440">
+    <Border BorderThickness="1" BorderBrush="Black" Width="182" Height="156">
         <cylindricalTopSurface:HeatMap x:Name="HeatMap" />
     </Border>
+    <!-- <Border BorderThickness="1" BorderBrush="Black" Width="550" Height="440"> -->
+    <!--     <cylindricalTopSurface:HeatMap x:Name="HeatMap" /> -->
+    <!-- </Border> -->
 </Window>
