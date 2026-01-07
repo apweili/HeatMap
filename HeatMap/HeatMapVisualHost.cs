@@ -3,7 +3,10 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
+using Point = System.Windows.Point;
 using Shape = HeatMap.Enums.Shape;
+using Size = System.Windows.Size;
 
 namespace HeatMap;
 
@@ -31,9 +34,14 @@ public class HeatMapVisualHost : UIElement
 
     private Size CurrentRenderSize { get; set; }
     private DrawingVisual DrawingHeatMapVisual { get; } = new();
+    private Rectangle Background { get; } = new()
+    {
+        Fill = Brushes.Transparent
+    };
 
     public HeatMapVisualHost()
     {
+        AddVisualChild(Background);
         AddVisualChild(DrawingHeatMapVisual);
     }
 
@@ -55,7 +63,13 @@ public class HeatMapVisualHost : UIElement
     protected override void ArrangeCore(Rect finalRect)
     {
         base.ArrangeCore(finalRect);
+        if (CurrentRenderSize == finalRect.Size)
+        {
+            return;
+        }
+
         CurrentRenderSize = finalRect.Size;
+        Background.Arrange(new Rect(new Point(0, 0), CurrentRenderSize));
         RenderHeatMap(CurrentRenderSize.Width, CurrentRenderSize.Height);
     }
 
@@ -67,6 +81,11 @@ public class HeatMapVisualHost : UIElement
     protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
     {
         EnsurePopupClosed();
+        if (Equals(e.Source, Background))
+        {
+            return;
+        }
+        
         var point = e.GetPosition(this);
         var horizonPosition = Math.Round(point.X / CurrentRenderSize.Width * HeatMapSetting!.MaxHorizontalPosition, 2);
         var verticalPosition = Math.Round(point.Y / CurrentRenderSize.Height * HeatMapSetting.MaxVerticalPosition, 2);
@@ -145,11 +164,14 @@ public class HeatMapVisualHost : UIElement
         return a * (1 - u) + b * u;
     }
 
-    protected override int VisualChildrenCount => 1;
+    protected override int VisualChildrenCount => 2;
 
     protected override Visual GetVisualChild(int index)
     {
-        return DrawingHeatMapVisual;
+        if (index == 1)
+            return DrawingHeatMapVisual;
+
+        return Background;
     }
 
     public void EnsurePopupClosed()
