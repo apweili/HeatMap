@@ -12,15 +12,19 @@
                             <RowDefinition Height="1*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10*" />
                             <ColumnDefinition Width="3*" />
+                            <ColumnDefinition Width="30*" />
                         </Grid.ColumnDefinitions>
                         <Canvas x:Name="PART_CoordinateSystemCanvas" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
                                 Background="Beige" />
-                        <Border Grid.Row="0" Grid.Column="1" Padding="5">
+                        <Border Grid.Row="0" Grid.Column="2" Padding="5">
                             <heatMap:HeatMapVisualHost x:Name="PART_HeatMapVisualHost" />
                         </Border>
-                        <Border Grid.Row="1" Grid.Column="1" Background="Transparent" Padding="5,0">
+                        <Border Grid.Row="0" Grid.Column="1" Background="Transparent">
+                            <Canvas x:Name="PART_CoordinateYCanvas" />
+                        </Border>
+                        <Border Grid.Row="1" Grid.Column="2" Background="Transparent" Padding="5,0">
                             <Canvas x:Name="PART_CoordinateXCanvas" />
                         </Border>
                     </Grid>

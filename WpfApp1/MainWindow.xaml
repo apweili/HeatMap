@@ -3,14 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
         xmlns:cylindricalTopSurface="clr-namespace:HeatMap;assembly=HeatMap"
         mc:Ignorable="d"
         Title="MainWindow">
-    <Border BorderThickness="1" BorderBrush="Black" Width="182" Height="156">
+    <!-- <Border BorderThickness="1" BorderBrush="Black" Width="182" Height="156"> -->
+    <!--     <cylindricalTopSurface:HeatMapControl x:Name="HeatMap" /> -->
+    <!-- </Border> -->
+    <Border BorderThickness="1" BorderBrush="Black" Width="500" Height="400">
         <cylindricalTopSurface:HeatMapControl x:Name="HeatMap" />
     </Border>
-    <!-- <Border BorderThickness="1" BorderBrush="Black" Width="550" Height="440"> -->
-    <!--     <cylindricalTopSurface:HeatMap x:Name="HeatMap" /> -->
-    <!-- </Border> -->
 </Window>

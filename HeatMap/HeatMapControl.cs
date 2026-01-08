@@ -115,9 +115,7 @@ public partial class HeatMapControl : Control
 
     private void DrawCoordinateXCanvas(Canvas coordinateXCanvas, double newSizeWidth, double newSizeHeight)
     {
-        const int start = 0;
-        var end = MaxHorizontalPosition;
-        var lineHeight = newSizeHeight / 3;
+        var lineHeight = newSizeHeight / 4;
         var axisLine = new Line
         {
             X1 = 0,
@@ -129,7 +127,10 @@ public partial class HeatMapControl : Control
         };
         coordinateXCanvas.Children.Add(axisLine);
 
-        const int numTicks = 5;
+        const int numTicksPerDirection = 2;
+        const int numTicks = numTicksPerDirection * 2;
+        var start = -MaxHorizontalPosition / 2;
+        var end = MaxHorizontalPosition / 2;
         const double fontSizeFactor = 0.4;
         var font = fontSizeFactor * newSizeHeight;
         var tickInterval = (end - start) / numTicks;
@@ -137,31 +138,28 @@ public partial class HeatMapControl : Control
         var textBlockYOffset = lineHeight * 1.2;
         for (var i = 0; i <= numTicks; i++)
         {
-            var position = start + i * tickInterval;
-            var xPosition = position / (end - start) * newSizeWidth;
-            if (i != 0)
+            var position = i * tickInterval;
+            var xPosition = position / MaxHorizontalPosition * newSizeWidth;
+            var tickMark = new Line
             {
-                var tickMark = new Line
-                {
-                    X1 = xPosition,
-                    Y1 = tickMarkY1,
-                    X2 = xPosition,
-                    Y2 = lineHeight,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1
-                };
-                coordinateXCanvas.Children.Add(tickMark);
-            }
+                X1 = xPosition,
+                Y1 = tickMarkY1,
+                X2 = xPosition,
+                Y2 = lineHeight,
+                Stroke = Brushes.Black,
+                StrokeThickness = 1
+            };
+            coordinateXCanvas.Children.Add(tickMark);
 
             var label = new TextBlock
             {
-                Text = position.ToString("F2"),
+                Text = (start + position).ToString("F2"),
                 Foreground = Brushes.Black,
                 FontSize = font,
             };
             Canvas.SetLeft(label, xPosition - font * i switch
             {
-                0 => 0,
+                numTicksPerDirection => 1,
                 numTicks => 2.6,
                 _ => 2
             });
