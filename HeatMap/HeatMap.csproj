@@ -12,6 +12,9 @@
       <Compile Update="HeatMapControl_DependencyProperties.cs">
         <DependentUpon>HeatMap.cs</DependentUpon>
       </Compile>
+      <Compile Update="HeatMapControl_Popup.cs">
+        <DependentUpon>HeatMapControl.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

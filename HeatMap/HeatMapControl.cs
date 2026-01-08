@@ -38,6 +38,10 @@ public partial class HeatMapControl : Control
     {
         base.OnApplyTemplate();
         HeatMapVisualHost = (HeatMapVisualHost)GetTemplateChild(HeatMapVisualHostTemplateName)!;
+        HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
+            GetColorFromTemperature, Shape));
+        HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
+
         CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
         CoordinateSystemCanvas.SizeChanged += CoordinateSystemCanvasOnSizeChanged;
@@ -49,14 +53,12 @@ public partial class HeatMapControl : Control
         CoordinateYCanvas = (Canvas)GetTemplateChild(CoordinateYCanvasName)!;
         CoordinateYCanvas.SizeChanged -= CoordinateYCanvasOnSizeChanged;
         CoordinateYCanvas.SizeChanged += CoordinateYCanvasOnSizeChanged;
-        HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
-            GetColorFromTemperature, Shape));
-        HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
+
+        AddHandlersForPopup();
     }
 
     protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
     {
-        HeatMapVisualHost!.EnsurePopupClosed();
         Dispatcher.InvokeAsync(() => Keyboard.Focus(this));
     }
 
