@@ -24,7 +24,8 @@ public partial class MainWindow : Window
             new TemperaturePoint { X = HeatMap.MaxHorizontalPosition, Y = 0, Temperature = 30 },
             new TemperaturePoint { X = 0, Y = HeatMap.MaxVerticalPosition, Temperature = 20 },
             new TemperaturePoint
-                { X = HeatMap.MaxHorizontalPosition, Y = HeatMap.MaxVerticalPosition, Temperature = 40 }
+                { X = HeatMap.MaxHorizontalPosition, Y = HeatMap.MaxVerticalPosition, Temperature = 40 },
+            new TemperaturePoint { X = HeatMap.MaxVerticalPosition / 2, Y = HeatMap.MaxVerticalPosition / 2, Temperature = 10 },
         ];
     }
 }

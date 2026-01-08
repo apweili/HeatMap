@@ -54,6 +54,11 @@ public partial class HeatMapControl
             return;
         }
 
+        if (ContextMenu?.IsOpen == true)
+        {
+            ContextMenu.IsOpen = false;
+        }
+
         var point = e.GetPosition(heatMapVisualHost);
         var horizonPosition =
             Math.Round(point.X / background.ActualWidth * MaxHorizontalPosition - MaxHorizontalPosition / 2, 2);
@@ -76,11 +81,13 @@ public partial class HeatMapControl
     {
         var contextMenu = new ContextMenu();
 
-        var menuItem1 = new MenuItem { Header = "Save Image", Command = SaveImageCommand, CommandTarget = this };
-        var menuItem2 = new MenuItem { Header = "Option 2" };
+        var saveImageMenuItem = new MenuItem
+            { Header = "Save Image", Command = SaveImageCommand, CommandTarget = this };
+        var toggleDisplayPointsMenuItem = new MenuItem { Header = "Toggle Display Points" };
+        toggleDisplayPointsMenuItem.Click += (_, _) => { HeatMapVisualHost!.ToggleDisplayPoints(); };
 
-        contextMenu.Items.Add(menuItem1);
-        contextMenu.Items.Add(menuItem2);
+        contextMenu.Items.Add(saveImageMenuItem);
+        contextMenu.Items.Add(toggleDisplayPointsMenuItem);
 
         contextMenu.Placement = PlacementMode.MousePoint;
         contextMenu.PlacementTarget = this;
@@ -96,21 +103,20 @@ public partial class HeatMapControl
             DefaultExt = ".png"
         };
 
-        if (saveFileDialog.ShowDialog() == true)
-        {
-            var renderBitmap = new RenderTargetBitmap(
-                (int)RenderSize.Width,
-                (int)RenderSize.Height,
-                96d,
-                96d,
-                PixelFormats.Pbgra32);
+        if (saveFileDialog.ShowDialog() != true) return;
 
-            renderBitmap.Render(this);
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-            using var stream = saveFileDialog.OpenFile();
-            encoder.Save(stream);
-        }
+        var renderBitmap = new RenderTargetBitmap(
+            (int)RenderSize.Width,
+            (int)RenderSize.Height,
+            96d,
+            96d,
+            PixelFormats.Pbgra32);
+
+        renderBitmap.Render(this);
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+        using var stream = saveFileDialog.OpenFile();
+        encoder.Save(stream);
     }
 
     private static bool IsHitOnHeatMapVisualBackground(HeatMapVisualHost heatMapVisualHost,

@@ -9,13 +9,19 @@ namespace HeatMap;
 
 public class HeatMapVisualHost : UIElement
 {
+    private readonly VisualCollection _visualCollection;
+
     public HeatMapVisualHost()
     {
-        AddVisualChild(Background);
-        AddVisualChild(DrawingHeatMapVisual);
+        _visualCollection = new VisualCollection(this)
+        {
+            Background,
+            DrawingHeatMapVisual
+        };
     }
 
     private DrawingVisual DrawingHeatMapVisual { get; } = new();
+    private DrawingVisual DrawingPointsVisual { get; } = new();
 
     public Rectangle Background { get; } = new()
     {
@@ -57,16 +63,16 @@ public class HeatMapVisualHost : UIElement
     private void RenderHeatMap()
     {
         HasPreparedToRenderHeatMap = false;
-        var width = Background.ActualWidth;
-        var height = Background.ActualHeight;
+        var renderWidth = Background.ActualWidth;
+        var renderHeight = Background.ActualHeight;
         var maxPositionOnX = HeatMapSetting!.MaxHorizontalPosition;
         var maxPositionOnY = HeatMapSetting.MaxVerticalPosition;
         var getColorFromTemperature = HeatMapSetting.GetColorFromTemperature;
         var testPoints = TemperaturePoints!.Select(p => new TemperaturePoint
         {
             Temperature = p.Temperature,
-            X = p.X / maxPositionOnX * width,
-            Y = p.Y / maxPositionOnY * height
+            X = p.X / maxPositionOnX * renderWidth,
+            Y = p.Y / maxPositionOnY * renderHeight
         }).Take(4).ToArray();
         // 定义四个点的坐标和温度值
         var p00 = testPoints[0];
@@ -77,16 +83,16 @@ public class HeatMapVisualHost : UIElement
         using var dc = DrawingHeatMapVisual.RenderOpen();
         if (HeatMapSetting.Shape == Shape.Circle)
         {
-            var widthOffset = width / 2;
-            var heightOffset = height / 2;
+            var widthOffset = renderWidth / 2;
+            var heightOffset = renderHeight / 2;
             var circleGeometry =
                 new EllipseGeometry(new Point(widthOffset, heightOffset), widthOffset, heightOffset);
             dc.PushClip(circleGeometry);
         }
 
-        for (var x = 0; x < width; x++)
+        for (var x = 0; x < renderWidth; x++)
         {
-            for (var y = 0; y < height; y++)
+            for (var y = 0; y < renderHeight; y++)
             {
                 // 使用双线性插值计算当前点的温度
                 var temperature = BilinearInterpolation(x, y, p00, p10, p01, p11);
@@ -96,6 +102,24 @@ public class HeatMapVisualHost : UIElement
 
                 // 绘制像素
                 dc.DrawRectangle(new SolidColorBrush(color), null, new Rect(x, y, 1.5, 1.5));
+            }
+        }
+
+        RenderPoints();
+        return;
+
+        void RenderPoints()
+        {
+            DrawingPointsVisual.Children.Clear();
+            using var dp = DrawingPointsVisual.RenderOpen();
+            var radiusOnX = renderWidth / 100;
+            var radiusOnY = renderHeight / 100;
+            foreach (var temperaturePoint in TemperaturePoints!)
+            {
+                var x = temperaturePoint.X / maxPositionOnX * renderWidth;
+                var y = temperaturePoint.Y / maxPositionOnY * renderHeight;
+                dp.DrawEllipse(new SolidColorBrush(Colors.Black), new Pen(Brushes.Black, 1), new Point(x, y), radiusOnX,
+                    radiusOnY);
             }
         }
     }
@@ -111,13 +135,27 @@ public class HeatMapVisualHost : UIElement
         return a * (1 - u) + b * u;
     }
 
-    protected override int VisualChildrenCount => 2;
+    protected override int VisualChildrenCount => _visualCollection.Count;
 
     protected override Visual GetVisualChild(int index)
     {
-        if (index == 1)
-            return DrawingHeatMapVisual;
+        return _visualCollection[index];
+    }
 
-        return Background;
+
+    public void ToggleDisplayPoints()
+    {
+        if (TemperaturePoints == null)
+        {
+            return;
+        }
+
+        if (_visualCollection.Contains(DrawingPointsVisual))
+        {
+            _visualCollection.RemoveAt(2);
+            return;
+        }
+
+        _visualCollection.Add(DrawingPointsVisual);
     }
 }

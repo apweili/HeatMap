@@ -20,11 +20,12 @@ public partial class HeatMapControl : Control
     }
 
 
-    private static readonly RoutedCommand SaveImageCommand = new RoutedCommand("SaveImage", typeof(HeatMapControl));
+    private static readonly RoutedCommand SaveImageCommand = new("SaveImage", typeof(HeatMapControl));
 
     public HeatMapControl()
     {
         FocusManager.SetIsFocusScope(this, true);
+        FocusManager.SetFocusedElement(this, this);
         ContextMenu = CreateContextMenu();
         CommandBindings.Add(new CommandBinding(SaveImageCommand, OnSaveImageExecuted));
     }
