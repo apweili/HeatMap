@@ -3,14 +3,14 @@ using HeatMap.Enums;
 
 namespace HeatMap;
 
-public partial class HeatMap
+public partial class HeatMapControl
 {
     private const double DefaultMaxPosition = 400;
     private const double DefaultMinTemperature = 10;
     private const double DefaultMaxTemperature = 40;
 
     public static readonly DependencyProperty MinTemperatureProperty =
-        DependencyProperty.Register(nameof(MinTemperature), typeof(double), typeof(HeatMap),
+        DependencyProperty.Register(nameof(MinTemperature), typeof(double), typeof(HeatMapControl),
             new PropertyMetadata(DefaultMinTemperature));
 
     public double MinTemperature
@@ -20,7 +20,7 @@ public partial class HeatMap
     }
 
     public static readonly DependencyProperty MaxTemperatureProperty =
-        DependencyProperty.Register(nameof(MaxTemperature), typeof(double), typeof(HeatMap),
+        DependencyProperty.Register(nameof(MaxTemperature), typeof(double), typeof(HeatMapControl),
             new PropertyMetadata(DefaultMaxTemperature));
 
     public double MaxTemperature
@@ -30,7 +30,7 @@ public partial class HeatMap
     }
 
     public static readonly DependencyProperty MaxHorizontalPositionProperty =
-        DependencyProperty.Register(nameof(MaxHorizontalPosition), typeof(double), typeof(HeatMap),
+        DependencyProperty.Register(nameof(MaxHorizontalPosition), typeof(double), typeof(HeatMapControl),
             new PropertyMetadata(DefaultMaxPosition));
 
     public double MaxHorizontalPosition
@@ -40,7 +40,7 @@ public partial class HeatMap
     }
 
     public static readonly DependencyProperty MaxVerticalPositionProperty =
-        DependencyProperty.Register(nameof(MaxVerticalPosition), typeof(double), typeof(HeatMap),
+        DependencyProperty.Register(nameof(MaxVerticalPosition), typeof(double), typeof(HeatMapControl),
             new PropertyMetadata(DefaultMaxPosition));
 
     public double MaxVerticalPosition
@@ -50,7 +50,7 @@ public partial class HeatMap
     }
 
     public static readonly DependencyProperty TemperaturePointsProperty =
-        DependencyProperty.Register(nameof(TemperaturePoints), typeof(IEnumerable<TemperaturePoint>), typeof(HeatMap),
+        DependencyProperty.Register(nameof(TemperaturePoints), typeof(IEnumerable<TemperaturePoint>), typeof(HeatMapControl),
             new PropertyMetadata(null));
 
     public IEnumerable<TemperaturePoint> TemperaturePoints
@@ -60,7 +60,7 @@ public partial class HeatMap
     }
 
     public static readonly DependencyProperty ShapeProperty =
-        DependencyProperty.Register(nameof(Shape), typeof(Shape), typeof(HeatMap),
+        DependencyProperty.Register(nameof(Shape), typeof(Shape), typeof(HeatMapControl),
             new PropertyMetadata(Shape.Circle));
 
     public Shape Shape

@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Update="HeatMap_DependencyProperties.cs">
+      <Compile Update="HeatMapControl_DependencyProperties.cs">
         <DependentUpon>HeatMap.cs</DependentUpon>
       </Compile>
     </ItemGroup>

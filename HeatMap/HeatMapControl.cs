@@ -9,16 +9,16 @@ namespace HeatMap;
 [TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(HeatMapVisualHost))]
 [TemplatePart(Name = CoordinateSystemCanvasName, Type = typeof(Canvas))]
 [TemplatePart(Name = CoordinateXCanvasName, Type = typeof(Canvas))]
-public partial class HeatMap : Control
+public partial class HeatMapControl : Control
 {
-    static HeatMap()
+    static HeatMapControl()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(HeatMap),
-            new FrameworkPropertyMetadata(typeof(HeatMap)));
-        SnapsToDevicePixelsProperty.OverrideMetadata(typeof(HeatMap), new FrameworkPropertyMetadata(true));
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(HeatMapControl),
+            new FrameworkPropertyMetadata(typeof(HeatMapControl)));
+        SnapsToDevicePixelsProperty.OverrideMetadata(typeof(HeatMapControl), new FrameworkPropertyMetadata(true));
     }
 
-    public HeatMap()
+    public HeatMapControl()
     {
         FocusManager.SetIsFocusScope(this, true);
     }
