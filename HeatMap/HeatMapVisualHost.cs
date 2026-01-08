@@ -12,9 +12,6 @@ namespace HeatMap;
 
 public class HeatMapVisualHost : UIElement
 {
-    private const int DefaultWidth = 400;
-    private const int DefaultHeight = 400;
-
     private Lazy<Popup> Popup { get; } = new(PopupFactory);
 
     private static Popup PopupFactory()
@@ -31,46 +28,35 @@ public class HeatMapVisualHost : UIElement
 
         return popup;
     }
-
-    private Size CurrentRenderSize { get; set; }
-    private DrawingVisual DrawingHeatMapVisual { get; } = new();
-    private Rectangle Background { get; } = new()
-    {
-        Fill = Brushes.Transparent
-    };
-
+    
     public HeatMapVisualHost()
     {
         AddVisualChild(Background);
         AddVisualChild(DrawingHeatMapVisual);
     }
 
+    private DrawingVisual DrawingHeatMapVisual { get; } = new();
+    private Rectangle Background { get; } = new()
+    {
+        Fill = Brushes.Transparent
+    };
+    
+    private bool HasPreparedToRenderHeatMap { get; set; }
+
+
     protected override Size MeasureCore(Size availableSize)
     {
-        if (double.IsPositiveInfinity(availableSize.Width))
-        {
-            availableSize.Width = DefaultWidth;
-        }
-
-        if (double.IsPositiveInfinity(availableSize.Height))
-        {
-            availableSize.Height = DefaultHeight;
-        }
-
         return availableSize;
     }
 
     protected override void ArrangeCore(Rect finalRect)
     {
         base.ArrangeCore(finalRect);
-        if (CurrentRenderSize == finalRect.Size)
-        {
-            return;
-        }
+        Background.Arrange(new Rect(new Point(0, 0), finalRect.Size));
+        if (HasPreparedToRenderHeatMap) return;
 
-        CurrentRenderSize = finalRect.Size;
-        Background.Arrange(new Rect(new Point(0, 0), CurrentRenderSize));
-        RenderHeatMap(CurrentRenderSize.Width, CurrentRenderSize.Height);
+        HasPreparedToRenderHeatMap = true;
+        Dispatcher.InvokeAsync(RenderHeatMap);
     }
 
     protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -85,10 +71,10 @@ public class HeatMapVisualHost : UIElement
         {
             return;
         }
-        
+
         var point = e.GetPosition(this);
-        var horizonPosition = Math.Round(point.X / CurrentRenderSize.Width * HeatMapSetting!.MaxHorizontalPosition, 2);
-        var verticalPosition = Math.Round(point.Y / CurrentRenderSize.Height * HeatMapSetting.MaxVerticalPosition, 2);
+        var horizonPosition = Math.Round(point.X / Background.ActualWidth * HeatMapSetting!.MaxHorizontalPosition, 2);
+        var verticalPosition = Math.Round(point.Y / Background.ActualHeight * HeatMapSetting.MaxVerticalPosition, 2);
         var popup = Popup.Value;
         ((TextBlock)popup.Child).Text = $"x:{horizonPosition}, y:{verticalPosition}";
         popup.Placement = PlacementMode.MousePoint;
@@ -110,8 +96,11 @@ public class HeatMapVisualHost : UIElement
 
     private IEnumerable<TemperaturePoint>? TemperaturePoints { get; set; }
 
-    private void RenderHeatMap(double width, double height)
+    private void RenderHeatMap()
     {
+        HasPreparedToRenderHeatMap = false;
+        var width = Background.ActualWidth;
+        var height = Background.ActualHeight;
         var maxPositionOnX = HeatMapSetting!.MaxHorizontalPosition;
         var maxPositionOnY = HeatMapSetting.MaxVerticalPosition;
         var getColorFromTemperature = HeatMapSetting.GetColorFromTemperature;
