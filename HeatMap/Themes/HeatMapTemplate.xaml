@@ -6,7 +6,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type heatMap:HeatMapControl}">
-                    <Grid>
+                    <Grid Background="White">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="10*" />
                             <RowDefinition Height="1*" />
@@ -21,10 +21,10 @@
                         <Border Grid.Row="0" Grid.Column="2" Padding="5">
                             <heatMap:HeatMapVisualHost x:Name="PART_HeatMapVisualHost" />
                         </Border>
-                        <Border Grid.Row="0" Grid.Column="1" Background="Transparent" Padding="0,5">
+                        <Border Grid.Row="0" Grid.Column="1" Padding="0,5">
                             <Canvas x:Name="PART_CoordinateYCanvas" />
                         </Border>
-                        <Border Grid.Row="1" Grid.Column="2" Background="Transparent" Padding="5,0">
+                        <Border Grid.Row="1" Grid.Column="2" Padding="5,0">
                             <Canvas x:Name="PART_CoordinateXCanvas" />
                         </Border>
                     </Grid>

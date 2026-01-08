@@ -19,9 +19,14 @@ public partial class HeatMapControl : Control
         SnapsToDevicePixelsProperty.OverrideMetadata(typeof(HeatMapControl), new FrameworkPropertyMetadata(true));
     }
 
+
+    private static readonly RoutedCommand SaveImageCommand = new RoutedCommand("SaveImage", typeof(HeatMapControl));
+
     public HeatMapControl()
     {
         FocusManager.SetIsFocusScope(this, true);
+        ContextMenu = CreateContextMenu();
+        CommandBindings.Add(new CommandBinding(SaveImageCommand, OnSaveImageExecuted));
     }
 
     private const string HeatMapVisualHostTemplateName = "PART_HeatMapVisualHost";
@@ -188,6 +193,7 @@ public partial class HeatMapControl : Control
             coordinateYCanvas.Children.Add(label);
         }
     }
+
     private void DrawCoordinateXCanvas(Canvas coordinateXCanvas, double newSizeWidth, double newSizeHeight)
     {
         var lineYOffset = newSizeHeight / 4;

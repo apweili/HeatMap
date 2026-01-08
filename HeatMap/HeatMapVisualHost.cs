@@ -17,7 +17,7 @@ public class HeatMapVisualHost : UIElement
 
     private DrawingVisual DrawingHeatMapVisual { get; } = new();
 
-    private Rectangle Background { get; } = new()
+    public Rectangle Background { get; } = new()
     {
         Fill = Brushes.Transparent
     };
