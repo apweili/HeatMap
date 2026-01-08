@@ -9,6 +9,7 @@ namespace HeatMap;
 [TemplatePart(Name = HeatMapVisualHostTemplateName, Type = typeof(HeatMapVisualHost))]
 [TemplatePart(Name = CoordinateSystemCanvasName, Type = typeof(Canvas))]
 [TemplatePart(Name = CoordinateXCanvasName, Type = typeof(Canvas))]
+[TemplatePart(Name = CoordinateYCanvasName, Type = typeof(Canvas))]
 public partial class HeatMapControl : Control
 {
     static HeatMapControl()
@@ -26,10 +27,12 @@ public partial class HeatMapControl : Control
     private const string HeatMapVisualHostTemplateName = "PART_HeatMapVisualHost";
     private const string CoordinateSystemCanvasName = "PART_CoordinateSystemCanvas";
     private const string CoordinateXCanvasName = "PART_CoordinateXCanvas";
+    private const string CoordinateYCanvasName = "PART_CoordinateYCanvas";
 
     private HeatMapVisualHost? HeatMapVisualHost { get; set; }
     private Canvas? CoordinateSystemCanvas { get; set; }
     private Canvas? CoordinateXCanvas { get; set; }
+    private Canvas? CoordinateYCanvas { get; set; }
 
     public override void OnApplyTemplate()
     {
@@ -38,9 +41,14 @@ public partial class HeatMapControl : Control
         CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
         CoordinateSystemCanvas.SizeChanged += CoordinateSystemCanvasOnSizeChanged;
+
         CoordinateXCanvas = (Canvas)GetTemplateChild(CoordinateXCanvasName)!;
         CoordinateXCanvas.SizeChanged -= CoordinateXCanvasOnSizeChanged;
         CoordinateXCanvas.SizeChanged += CoordinateXCanvasOnSizeChanged;
+
+        CoordinateYCanvas = (Canvas)GetTemplateChild(CoordinateYCanvasName)!;
+        CoordinateYCanvas.SizeChanged -= CoordinateYCanvasOnSizeChanged;
+        CoordinateYCanvas.SizeChanged += CoordinateYCanvasOnSizeChanged;
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
             GetColorFromTemperature, Shape));
         HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
@@ -50,6 +58,13 @@ public partial class HeatMapControl : Control
     {
         HeatMapVisualHost!.EnsurePopupClosed();
         Dispatcher.InvokeAsync(() => Keyboard.Focus(this));
+    }
+
+    private void CoordinateYCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var coordinateXCanvas = (Canvas)sender;
+        coordinateXCanvas.Children.Clear();
+        DrawCoordinateYCanvas(coordinateXCanvas, e.NewSize.Width, e.NewSize.Height);
     }
 
     private void CoordinateXCanvasOnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -76,7 +91,7 @@ public partial class HeatMapControl : Control
         var temperatureSpan = maxTemperature - minTemperature;
         var tickLineHorizonOffset = rectangleWidth / 3;
         var fontSize = fontSizeFactor * height;
-        var textSize = CalculateTextBlockHeight("A", fontSize);
+        var (_, textHeight) = CalculateTextBlockHeight("A", fontSize);
         foreach (var temperaturePoint in TemperaturePoints)
         {
             var tickHeight = height - (temperaturePoint.Temperature - minTemperature) / temperatureSpan * height;
@@ -103,25 +118,83 @@ public partial class HeatMapControl : Control
                 VerticalAlignment = VerticalAlignment.Stretch
             };
             Canvas.SetLeft(label, rectangleWidth);
-            var textBlockHeight = tickHeight - textSize / 4;
-            if (textBlockHeight + textSize > height)
+            var textBlockHeight = tickHeight - textHeight / 4;
+            if (textBlockHeight + textHeight > height)
             {
-                textBlockHeight = tickHeight - textSize;
+                textBlockHeight = tickHeight - textHeight;
             }
+
             Canvas.SetTop(label, textBlockHeight);
             canvas.Children.Add(label);
         }
     }
 
+
+    private void DrawCoordinateYCanvas(Canvas coordinateYCanvas, double newSizeWidth, double newSizeHeight)
+    {
+        var lineXOffset = newSizeWidth * 3 / 4;
+        var axisLine = new Line
+        {
+            X1 = lineXOffset,
+            Y1 = 0,
+            X2 = lineXOffset,
+            Y2 = newSizeHeight,
+            Stroke = Brushes.Black,
+            StrokeThickness = 1
+        };
+        coordinateYCanvas.Children.Add(axisLine);
+
+        const int numTicksPerDirection = 2;
+        const int numTicks = numTicksPerDirection * 2;
+        var start = -MaxVerticalPosition / 2;
+        var end = MaxVerticalPosition / 2;
+        const double fontSizeFactor = 0.2;
+        var font = fontSizeFactor * newSizeWidth;
+        var tickInterval = (end - start) / numTicks;
+        var textBlockEndOffset = lineXOffset * 0.9;
+        var tickMarkLength = (newSizeWidth - lineXOffset) * 0.6;
+        for (var i = 0; i <= numTicks; i++)
+        {
+            var position = i * tickInterval;
+            var yPosition = newSizeHeight - position / MaxVerticalPosition * newSizeHeight;
+            var tickMark = new Line
+            {
+                X1 = lineXOffset,
+                Y1 = yPosition,
+                X2 = lineXOffset + tickMarkLength,
+                Y2 = yPosition,
+                Stroke = Brushes.Black,
+                StrokeThickness = 1
+            };
+            coordinateYCanvas.Children.Add(tickMark);
+
+            var label = new TextBlock
+            {
+                Text = (start + position).ToString("F2"),
+                Foreground = Brushes.Black,
+                FontSize = font,
+            };
+
+            var textBlockXOffset = textBlockEndOffset - CalculateTextBlockHeight(label.Text, font).Width;
+            Canvas.SetLeft(label, textBlockXOffset);
+            Canvas.SetTop(label, yPosition - font * i switch
+            {
+                numTicksPerDirection => 1,
+                numTicks => 0,
+                _ => 1.2
+            });
+            coordinateYCanvas.Children.Add(label);
+        }
+    }
     private void DrawCoordinateXCanvas(Canvas coordinateXCanvas, double newSizeWidth, double newSizeHeight)
     {
-        var lineHeight = newSizeHeight / 4;
+        var lineYOffset = newSizeHeight / 4;
         var axisLine = new Line
         {
             X1 = 0,
-            Y1 = lineHeight,
+            Y1 = lineYOffset,
             X2 = newSizeWidth,
-            Y2 = lineHeight,
+            Y2 = lineYOffset,
             Stroke = Brushes.Black,
             StrokeThickness = 1
         };
@@ -131,11 +204,11 @@ public partial class HeatMapControl : Control
         const int numTicks = numTicksPerDirection * 2;
         var start = -MaxHorizontalPosition / 2;
         var end = MaxHorizontalPosition / 2;
-        const double fontSizeFactor = 0.4;
+        const double fontSizeFactor = 0.3;
         var font = fontSizeFactor * newSizeHeight;
         var tickInterval = (end - start) / numTicks;
-        var tickMarkY1 = lineHeight * 0.2;
-        var textBlockYOffset = lineHeight * 1.2;
+        var tickMarkY1 = lineYOffset * 0.2;
+        var textBlockYOffset = lineYOffset * 1.2;
         for (var i = 0; i <= numTicks; i++)
         {
             var position = i * tickInterval;
@@ -145,7 +218,7 @@ public partial class HeatMapControl : Control
                 X1 = xPosition,
                 Y1 = tickMarkY1,
                 X2 = xPosition,
-                Y2 = lineHeight,
+                Y2 = lineYOffset,
                 Stroke = Brushes.Black,
                 StrokeThickness = 1
             };
@@ -239,12 +312,12 @@ public partial class HeatMapControl : Control
         return $"{point.X}-{point.Y} {point.Temperature}";
     }
 
-    private double CalculateTextBlockHeight(string labelText, double fontSize)
+    private (double Width, double Height) CalculateTextBlockHeight(string labelText, double fontSize)
     {
         var pixelsPerDip = SystemParameters.FullPrimaryScreenWidth / SystemParameters.PrimaryScreenWidth;
         var formattedText = new FormattedText(labelText, System.Globalization.CultureInfo.CurrentCulture,
             FlowDirection.LeftToRight,
             new Typeface(FontFamily, FontStyle, FontWeight, FontStretch), fontSize, Brushes.Black, pixelsPerDip);
-        return formattedText.Height;
+        return (formattedText.Width, formattedText.Height);
     }
 }
