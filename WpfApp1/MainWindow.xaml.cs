@@ -20,12 +20,32 @@ public partial class MainWindow : Window
         HeatMap.Shape = Shape.Circle;
         HeatMap.TemperaturePoints =
         [
-            new TemperaturePoint { X = 0, Y = 0, Temperature = 10 },
-            new TemperaturePoint { X = HeatMap.MaxHorizontalPosition, Y = 0, Temperature = 30 },
-            new TemperaturePoint { X = 0, Y = HeatMap.MaxVerticalPosition, Temperature = 20 },
             new TemperaturePoint
-                { X = HeatMap.MaxHorizontalPosition, Y = HeatMap.MaxVerticalPosition, Temperature = 40 },
-            new TemperaturePoint { X = HeatMap.MaxVerticalPosition / 2, Y = HeatMap.MaxVerticalPosition / 2, Temperature = 10 },
+            {
+                X = 0 - HeatMap.MaxHorizontalPosition / 2, Y = 0 - HeatMap.MaxVerticalPosition / 2, Z = 111,
+                Temperature = 10
+            },
+            new TemperaturePoint
+            {
+                X = HeatMap.MaxHorizontalPosition - HeatMap.MaxHorizontalPosition / 2,
+                Y = 0 - HeatMap.MaxVerticalPosition / 2, Z = 333, Temperature = 30
+            },
+            new TemperaturePoint
+            {
+                X = 0 - HeatMap.MaxHorizontalPosition / 2,
+                Y = HeatMap.MaxVerticalPosition - HeatMap.MaxVerticalPosition / 2, Z = 222, Temperature = 20
+            },
+            new TemperaturePoint
+            {
+                X = HeatMap.MaxHorizontalPosition - HeatMap.MaxHorizontalPosition / 2,
+                Y = HeatMap.MaxVerticalPosition - HeatMap.MaxVerticalPosition / 2,
+                Z = 444, Temperature = 40
+            },
+            new TemperaturePoint
+            {
+                X = HeatMap.MaxVerticalPosition / 2 - HeatMap.MaxHorizontalPosition / 2,
+                Y = HeatMap.MaxVerticalPosition / 2 - HeatMap.MaxVerticalPosition / 2, Z = 111, Temperature = 10
+            },
         ];
     }
 }

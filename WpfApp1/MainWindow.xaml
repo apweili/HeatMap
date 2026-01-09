@@ -9,7 +9,7 @@
     <!-- <Border BorderThickness="1" BorderBrush="Black" Width="210" Height="160"> -->
     <!--     <cylindricalTopSurface:HeatMapControl x:Name="HeatMap" /> -->
     <!-- </Border> -->
-    <Border BorderThickness="1" BorderBrush="Black" Width="525" Height="400">
+    <Border BorderThickness="1" BorderBrush="Black" Width="525" Height="450">
         <cylindricalTopSurface:HeatMapControl x:Name="HeatMap" />
     </Border>
 </Window>

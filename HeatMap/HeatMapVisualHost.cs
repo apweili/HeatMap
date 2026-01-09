@@ -48,14 +48,16 @@ public class HeatMapVisualHost : UIElement
 
     private HeatMapSetting? HeatMapSetting { get; set; }
 
-    public void SetHeatMap(HeatMapSetting heatMapSetting)
+    public void SetHeatMap(HeatMapSetting heatMapSetting, IEnumerable<TemperaturePoint> temperaturePoints)
     {
         HeatMapSetting = heatMapSetting;
-    }
-
-    public void SetTemperaturePoints(IEnumerable<TemperaturePoint> temperaturePoints)
-    {
-        TemperaturePoints = temperaturePoints;
+        TemperaturePoints = temperaturePoints?.Select(t => new TemperaturePoint()
+        {
+            X = t.X + HeatMapSetting.MaxHorizontalPosition / 2,
+            Y = t.Y + HeatMapSetting.MaxVerticalPosition / 2,
+            Z = t.Z,
+            Temperature = t.Temperature
+        }).ToList();
     }
 
     private IEnumerable<TemperaturePoint>? TemperaturePoints { get; set; }

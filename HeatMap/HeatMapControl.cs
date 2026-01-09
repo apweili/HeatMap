@@ -45,8 +45,7 @@ public partial class HeatMapControl : Control
         base.OnApplyTemplate();
         HeatMapVisualHost = (HeatMapVisualHost)GetTemplateChild(HeatMapVisualHostTemplateName)!;
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
-            GetColorFromTemperature, Shape));
-        HeatMapVisualHost.SetTemperaturePoints(TemperaturePoints);
+            GetColorFromTemperature, Shape), TemperaturePoints);
 
         CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
@@ -91,14 +90,14 @@ public partial class HeatMapControl : Control
 
     private void DrawCoordinateSystem(Canvas canvas, double width, double height)
     {
-        const double fontSizeFactor = 10d / 200;
+        const double fontSizeFactor = 0.2;
         var maxTemperature = MaxTemperature;
         var minTemperature = MinTemperature;
         var rectangleWidth = width / 8;
         canvas.Children.Add(CreateRectangle(rectangleWidth, height, minTemperature, maxTemperature));
         var temperatureSpan = maxTemperature - minTemperature;
         var tickLineHorizonOffset = rectangleWidth / 3;
-        var fontSize = fontSizeFactor * height;
+        var fontSize = fontSizeFactor * width;
         var (_, textHeight) = CalculateTextBlockHeight("A", fontSize);
         foreach (var temperaturePoint in TemperaturePoints)
         {
@@ -318,7 +317,7 @@ public partial class HeatMapControl : Control
 
     private static string GetTemperaturePointInfo(TemperaturePoint point)
     {
-        return $"{point.X}-{point.Y} {point.Temperature}";
+        return $"{point.Z}";
     }
 
     private (double Width, double Height) CalculateTextBlockHeight(string labelText, double fontSize)

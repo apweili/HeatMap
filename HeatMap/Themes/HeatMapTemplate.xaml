@@ -12,9 +12,9 @@
                             <RowDefinition Height="1*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="10*" />
-                            <ColumnDefinition Width="5*" />
-                            <ColumnDefinition Width="30*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="6*" />
                         </Grid.ColumnDefinitions>
                         <Canvas x:Name="PART_CoordinateSystemCanvas" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
                                 Background="Beige" />
