@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -51,7 +52,7 @@ public class HeatMapVisualHost : UIElement
     public void SetHeatMap(HeatMapSetting heatMapSetting, IEnumerable<TemperaturePoint> temperaturePoints)
     {
         HeatMapSetting = heatMapSetting;
-        TemperaturePoints = temperaturePoints?.Select(t => new TemperaturePoint()
+        TemperaturePoints = temperaturePoints?.Select(t => new TemperaturePoint
         {
             X = t.X + HeatMapSetting.MaxHorizontalPosition / 2,
             Y = t.Y + HeatMapSetting.MaxVerticalPosition / 2,
@@ -70,17 +71,9 @@ public class HeatMapVisualHost : UIElement
         var maxPositionOnX = HeatMapSetting!.MaxHorizontalPosition;
         var maxPositionOnY = HeatMapSetting.MaxVerticalPosition;
         var getColorFromTemperature = HeatMapSetting.GetColorFromTemperature;
-        var testPoints = TemperaturePoints!.Select(p => new TemperaturePoint
-        {
-            Temperature = p.Temperature,
-            X = p.X / maxPositionOnX * renderWidth,
-            Y = p.Y / maxPositionOnY * renderHeight
-        }).Take(4).ToArray();
-        // 定义四个点的坐标和温度值
-        var p00 = testPoints[0];
-        var p10 = testPoints[1];
-        var p01 = testPoints[2];
-        var p11 = testPoints[3];
+        NormalDistribution.SetStandard(HeatMapSetting, renderWidth, renderHeight);
+        var normalDistributions = TemperaturePoints!
+            .Select(p => new NormalDistribution(p, HeatMapSetting, renderWidth, renderHeight)).ToArray();
         DrawingHeatMapVisual.Children.Clear();
         using var dc = DrawingHeatMapVisual.RenderOpen();
         if (HeatMapSetting.Shape == Shape.Circle)
@@ -96,13 +89,8 @@ public class HeatMapVisualHost : UIElement
         {
             for (var y = 0; y < renderHeight; y++)
             {
-                // 使用双线性插值计算当前点的温度
-                var temperature = BilinearInterpolation(x, y, p00, p10, p01, p11);
-
-                // 将温度映射到颜色
+                var temperature = EstimateTemperature(normalDistributions, x, y);
                 var color = getColorFromTemperature(temperature);
-
-                // 绘制像素
                 dc.DrawRectangle(new SolidColorBrush(color), null, new Rect(x, y, 1.5, 1.5));
             }
         }
@@ -124,17 +112,6 @@ public class HeatMapVisualHost : UIElement
                     radiusOnY);
             }
         }
-    }
-
-    private static double BilinearInterpolation(double x, double y, TemperaturePoint p00, TemperaturePoint p10,
-        TemperaturePoint p01, TemperaturePoint p11)
-    {
-        var t = (x - p00.X) / (p10.X - p00.X);
-        var a = p00.Temperature * (1 - t) + p10.Temperature * t;
-        var b = p01.Temperature * (1 - t) + p11.Temperature * t;
-
-        var u = (y - p00.Y) / (p01.Y - p00.Y);
-        return a * (1 - u) + b * u;
     }
 
     protected override int VisualChildrenCount => _visualCollection.Count;
@@ -159,5 +136,101 @@ public class HeatMapVisualHost : UIElement
         }
 
         _visualCollection.Add(DrawingPointsVisual);
+    }
+
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    private static double EstimateTemperature(IEnumerable<NormalDistribution> normalDistribution, double x, double y)
+    {
+        ArgumentNullException.ThrowIfNull(normalDistribution);
+        var candidates = normalDistribution.Select(n =>
+            new
+            {
+                Formular = n,
+                Distance = Math.Sqrt(Math.Pow(n.X - x, 2) + Math.Pow(n.Y - y, 2))
+            }
+        ).Select(n =>
+            new
+            {
+                TemperatureLimit = n.Formular.Temperature,
+                Temperature = n.Formular.EstimateTemperature(n.Distance),
+                Distance = n.Distance
+            }).ToList();
+
+        if (candidates.Count == 1)
+        {
+            return candidates[0].Temperature;
+        }
+
+        var temperaturesUpZero = candidates.Where(o => o.Temperature >= 0)
+            .OrderByDescending(c => c.Temperature);
+        var result1 = 0d;
+        int i = 1;
+        var maxTemperatureObject = temperaturesUpZero.FirstOrDefault();
+        foreach (var candidate in temperaturesUpZero.Select(t => t.Temperature))
+        {
+            result1 += Math.Abs(candidate - result1) / (i * i);
+            if (result1 >= maxTemperatureObject!.TemperatureLimit)
+            {
+                result1 = maxTemperatureObject.TemperatureLimit;
+                break;
+            }
+            i++;
+        }
+
+        var temperaturesBelowZero = candidates.Where(o => o.Temperature < 0)
+            .OrderBy(c => c.Temperature);
+        var minTemperatureObject = temperaturesBelowZero.FirstOrDefault();
+        i = 1;
+        var result2 = 0d;
+        foreach (var candidate in temperaturesBelowZero.Select(t => t.Temperature))
+        {
+            result2 -= Math.Abs(candidate - result1) / (i * i);
+            if (result2 <= minTemperatureObject!.TemperatureLimit)
+            {
+                result2 = minTemperatureObject.TemperatureLimit;
+                break;
+            }
+
+            i++;
+        }
+
+        var result = result1 + result2;
+        if (result1 == 0 || result2 == 0)
+        {
+            return result;
+        }
+
+        var maxTemperatureDistance = maxTemperatureObject!.Distance;
+        var minTemperatureDistance = minTemperatureObject!.Distance;
+        return (result1 * minTemperatureDistance * minTemperatureDistance +
+                result2 * maxTemperatureDistance * maxTemperatureDistance) /
+               (maxTemperatureDistance * maxTemperatureDistance + minTemperatureDistance * minTemperatureDistance);
+    }
+
+    private class NormalDistribution(
+        TemperaturePoint temperaturePoints,
+        HeatMapSetting setting,
+        double width,
+        double height)
+    {
+        public static double Standard { get; private set; }
+        private const double StandardFactor = 80;
+        public double X { get; } = temperaturePoints.X / setting.MaxHorizontalPosition * width;
+        public double Y { get; } = temperaturePoints.Y / setting.MaxVerticalPosition * height;
+
+        public double Temperature { get; } = temperaturePoints.Temperature;
+
+        public static void SetStandard(HeatMapSetting setting, double width,
+            double height)
+        {
+            Standard = StandardFactor * Math.Sqrt(
+                Math.Pow(width / setting.MaxHorizontalPosition, 2) + Math.Pow(height /
+                                                                              setting.MaxVerticalPosition, 2));
+        }
+
+        public double EstimateTemperature(double offset)
+        {
+            return Math.Exp(-1d / 2 * Math.Pow(offset / Standard, 2.0)) * Temperature;
+        }
     }
 }
