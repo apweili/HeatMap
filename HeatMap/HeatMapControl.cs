@@ -45,7 +45,7 @@ public partial class HeatMapControl : Control
         base.OnApplyTemplate();
         HeatMapVisualHost = (HeatMapVisualHost)GetTemplateChild(HeatMapVisualHostTemplateName)!;
         HeatMapVisualHost.SetHeatMap(new HeatMapSetting(MaxHorizontalPosition, MaxVerticalPosition,
-            GetColorFromTemperature, Shape), TemperaturePoints);
+            GetColorFromTemperature, Shape, MaxTemperature, MinTemperature), TemperaturePoints);
 
         CoordinateSystemCanvas = (Canvas)GetTemplateChild(CoordinateSystemCanvasName)!;
         CoordinateSystemCanvas.SizeChanged -= CoordinateSystemCanvasOnSizeChanged;
@@ -266,12 +266,26 @@ public partial class HeatMapControl : Control
         // 将温度映射到0-1之间
         var normalizedTemp = (temperature - minTemp) / (maxTemp - minTemp);
 
-        // 使用蓝色到红色的渐变
-        var red = (byte)(255 * normalizedTemp);
-        byte green = 0;
-        var blue = (byte)(255 * (1 - normalizedTemp));
+        // 使用新的颜色调色板
+        var colorPalette = ColorPalette;
+        var index = (int)(normalizedTemp * (colorPalette.Count - 1));
+        return colorPalette[index];
+    }
 
-        return Color.FromRgb(red, green, blue);
+    private static List<Color> ColorPalette { get; } = GenerateColorPalette();
+
+    private static List<Color> GenerateColorPalette()
+    {
+        var colorPalette = new List<Color>();
+        for (var i = 0; i < 100; i++)
+        {
+            var value = (double)i / 99;
+            var red = (byte)(255 * value);
+            var green = (byte)(255 * (1 - Math.Abs(2 * value - 1)));
+            var blue = (byte)(255 * (1 - value));
+            colorPalette.Add(Color.FromRgb(red, green, blue));
+        }
+        return colorPalette;
     }
 
     private static Rectangle CreateRectangle(double width, double height, double minTemp, double maxTemp)
@@ -280,14 +294,13 @@ public partial class HeatMapControl : Control
         {
             Width = width,
             Height = height,
-            Fill = CreateLinearGradientBrush(height, 2, minTemp, maxTemp)
+            Fill = CreateLinearGradientBrush()
         };
 
         return rectangle;
     }
 
-    private static LinearGradientBrush CreateLinearGradientBrush(double height, double heightSpan, double minTemp,
-        double maxTemp)
+    private static LinearGradientBrush CreateLinearGradientBrush()
     {
         var linearGradientBrush = new LinearGradientBrush
         {
@@ -295,23 +308,15 @@ public partial class HeatMapControl : Control
             EndPoint = new Point(0, 0)
         };
 
-        var offsetSpan = heightSpan / height;
-        var color = GetColorFromTemperature(minTemp, minTemp, maxTemp);
-        var colorUsedCount = 0;
-        for (double offset = 0; offset < 1; offset += offsetSpan, colorUsedCount++)
+        var colorPalette = ColorPalette;
+        var numColors = colorPalette.Count;
+        for (int i = 0; i < numColors; i++)
         {
-            if (colorUsedCount == 2)
-            {
-                colorUsedCount = 0;
-                var temperature = minTemp + offset * (maxTemp - minTemp);
-                color = GetColorFromTemperature(temperature, minTemp, maxTemp);
-            }
-
+            var offset = (double)i / (numColors - 1);
+            var color = colorPalette[i];
             linearGradientBrush.GradientStops.Add(new GradientStop(color, offset));
         }
 
-        color = GetColorFromTemperature(maxTemp, minTemp, maxTemp);
-        linearGradientBrush.GradientStops.Add(new GradientStop(color, 1));
         return linearGradientBrush;
     }
 

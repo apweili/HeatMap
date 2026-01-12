@@ -13,13 +13,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         HeatMap.MaxTemperature = 40;
-        HeatMap.MinTemperature = 10;
+        HeatMap.MinTemperature = -40;
         const int maxPosition = 400;
         HeatMap.MaxVerticalPosition = maxPosition;
         HeatMap.MaxHorizontalPosition = maxPosition;
-        HeatMap.Shape = Shape.Circle;
+        HeatMap.Shape = Shape.Rectangle;
         HeatMap.TemperaturePoints =
         [
+            new TemperaturePoint
+            {
+                X = 0, Y = 0, Z = 111,
+                Temperature = -40
+            },
             new TemperaturePoint
             {
                 X = 0 - HeatMap.MaxHorizontalPosition / 2, Y = 0 - HeatMap.MaxVerticalPosition / 2, Z = 111,
@@ -39,13 +44,19 @@ public partial class MainWindow : Window
             {
                 X = HeatMap.MaxHorizontalPosition - HeatMap.MaxHorizontalPosition / 2,
                 Y = HeatMap.MaxVerticalPosition - HeatMap.MaxVerticalPosition / 2,
-                Z = 444, Temperature = 40
+                Z = 32, Temperature = 40
             },
-            new TemperaturePoint
-            {
-                X = HeatMap.MaxVerticalPosition / 2 - HeatMap.MaxHorizontalPosition / 2,
-                Y = HeatMap.MaxVerticalPosition / 2 - HeatMap.MaxVerticalPosition / 2, Z = 111, Temperature = 10
-            },
+            // new TemperaturePoint
+            // {
+            //     X = 40,
+            //     Y = 40,
+            //     Z = 123, Temperature = 40
+            // },
+            // new TemperaturePoint
+            // {
+            //     X = HeatMap.MaxVerticalPosition / 2 - HeatMap.MaxHorizontalPosition / 2,
+            //     Y = HeatMap.MaxVerticalPosition / 2 - HeatMap.MaxVerticalPosition / 2, Z = 111, Temperature = 10
+            // },
         ];
     }
 }
